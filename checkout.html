@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171b15"><meta name="robots" content="noindex"><title>Finalizar compra | JatoMax</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="checkout.css"><script src="checkout.js" defer></script></head>
+<body>
+<div class="preview">Compra segura · JatoMax</div>
+<header><div class="wrap head"><a class="wordmark" href="index.html" aria-label="JatoMax, voltar à loja"><span class="wordmark-icon" aria-hidden="true">↗</span>JATO<span class="wordmark-max">MAX</span></a><nav aria-label="Navegação"><a href="index.html">‹ Voltar à loja</a></nav></div></header>
+
+<main class="wrap checkout">
+  <h1 class="co-title">Finalizar compra</h1>
+  <div class="co-layout">
+
+    <form id="checkout-form" class="co-form" novalidate autocomplete="on">
+
+      <section class="box co-step" aria-labelledby="s1">
+        <h2 id="s1"><span class="num">1</span>Seus dados</h2>
+        <div class="grid">
+          <label class="field full"><span>Nome completo</span><input name="nome" autocomplete="name" required placeholder="Como está no seu documento"><em class="err" aria-live="polite"></em></label>
+          <label class="field full"><span>E-mail</span><input name="email" type="email" autocomplete="email" inputmode="email" required placeholder="voce@email.com"><em class="err" aria-live="polite"></em></label>
+          <label class="field"><span>CPF</span><input name="cpf" inputmode="numeric" autocomplete="off" required placeholder="000.000.000-00" maxlength="14"><em class="err" aria-live="polite"></em></label>
+          <label class="field"><span>Celular com DDD</span><input name="telefone" type="tel" autocomplete="tel-national" inputmode="tel" required placeholder="(00) 00000-0000" maxlength="15"><em class="err" aria-live="polite"></em></label>
+        </div>
+      </section>
+
+      <section class="box co-step" aria-labelledby="s2">
+        <h2 id="s2"><span class="num">2</span>Endereço de entrega</h2>
+        <div class="grid">
+          <label class="field"><span>CEP</span><input name="cep" inputmode="numeric" autocomplete="postal-code" required placeholder="00000-000" maxlength="9"><em class="err" aria-live="polite"></em><small id="cep-status" aria-live="polite"></small></label>
+          <label class="field"><span>Estado (UF)</span><input name="uf" autocomplete="address-level1" required maxlength="2" placeholder="MG" style="text-transform:uppercase"><em class="err" aria-live="polite"></em></label>
+          <label class="field full"><span>Rua / Avenida</span><input name="rua" autocomplete="address-line1" required><em class="err" aria-live="polite"></em></label>
+          <label class="field"><span>Número</span><input name="numero" inputmode="numeric" required placeholder="123 ou S/N"><em class="err" aria-live="polite"></em></label>
+          <label class="field"><span>Complemento <i>(opcional)</i></span><input name="complemento" autocomplete="address-line2" placeholder="Apto, bloco, casa…"></label>
+          <label class="field"><span>Bairro</span><input name="bairro" required><em class="err" aria-live="polite"></em></label>
+          <label class="field"><span>Cidade</span><input name="cidade" autocomplete="address-level2" required><em class="err" aria-live="polite"></em></label>
+        </div>
+      </section>
+
+      <section class="box co-step" aria-labelledby="s3">
+        <h2 id="s3"><span class="num">3</span>Pagamento</h2>
+        <!-- ===== MÉTODOS DE PAGAMENTO =====
+             Coloque aqui dentro os métodos (Pix, cartão, boleto…).
+             Tudo que estiver dentro de #payment-methods substitui o aviso abaixo. -->
+        <div id="payment-methods">
+          <div class="pay-soon"><strong>Formas de pagamento em configuração</strong><span>Em breve você poderá escolher como pagar aqui.</span></div>
+        </div>
+      </section>
+
+      <button type="submit" class="primary co-submit">Finalizar pedido ↗</button>
+      <p class="co-safe">🔒 Seus dados são usados apenas para processar este pedido.</p>
+    </form>
+
+    <aside class="box co-summary" aria-labelledby="sum-title">
+      <h2 id="sum-title">Resumo do pedido</h2>
+      <div class="item">
+        <img src="media/1.webp" alt="Soprador JatoMax Turbo 2.0" width="76" height="76">
+        <div class="item-info"><strong>Soprador Turbo 2.0 sem fio</strong><small>1000G · Motor de cobre robusto</small>
+          <div class="qty"><button id="co-minus" type="button" aria-label="Diminuir quantidade">−</button><input id="co-qty" type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="Quantidade"><button id="co-plus" type="button" aria-label="Aumentar quantidade">+</button></div>
+        </div>
+        <span class="item-price" id="co-line">R$ 89,90</span>
+      </div>
+      <dl class="lines">
+        <div><dt>Subtotal</dt><dd id="co-subtotal">R$ 89,90</dd></div>
+        <div><dt>De <del>R$ 249,90</del> · desconto aplicado</dt><dd class="save" id="co-save">− R$ 160,00</dd></div>
+        <div><dt>Frete</dt><dd id="co-ship">A confirmar</dd></div>
+        <div class="grand"><dt>Total</dt><dd id="co-total">R$ 89,90</dd></div>
+      </dl>
+    </aside>
+  </div>
+</main>
+
+<footer class="wrap"><span>JatoMax · Soprador Turbo 2.0</span></footer>
+
+<dialog id="co-done" class="site-dialog" aria-labelledby="done-title"><form method="dialog"><button class="dialog-close" aria-label="Fechar">×</button><h2 id="done-title">Dados confirmados ✓</h2><p id="done-detail"></p><p>O pagamento ainda está sendo configurado, então nenhuma cobrança foi feita.</p><button class="primary" style="width:100%;margin-top:12px">Ok</button></form></dialog>
+</body></html>
