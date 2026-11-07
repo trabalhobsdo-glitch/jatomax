@@ -1,12 +1,15 @@
 // ===== Configurações do checkout =====
 const UNIT_PRICE = 8990;       // preço unitário em centavos
 const OLD_PRICE = 24990;       // preço "de" em centavos
-const SHIPPING = null;         // frete em centavos; null = "A confirmar", 0 = "Grátis"
+// Opções de frete (centavos). Se mudar aqui, mude também SHIPPING em api/_shared.ts e o texto no checkout.html.
+const SHIPPING_OPTIONS = {gratis: 0, pago: 1599};
 
 const money = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'});
 const $ = selector => document.querySelector(selector);
 const form = $('#checkout-form');
 const qtyInput = $('#co-qty');
+function shippingId() { return form.elements.frete.value in SHIPPING_OPTIONS ? form.elements.frete.value : 'gratis'; }
+function shippingCents() { return SHIPPING_OPTIONS[shippingId()]; }
 
 // ===== Quantidade (vem da loja via ?qtd=) =====
 function clampQty(value) {
@@ -19,11 +22,11 @@ function render() {
   const n = qty();
   const subtotal = n * UNIT_PRICE;
   const saving = n * (OLD_PRICE - UNIT_PRICE);
-  const ship = SHIPPING ?? 0;
+  const ship = shippingCents();
   $('#co-line').textContent = money.format(subtotal / 100);
   $('#co-subtotal').textContent = money.format(subtotal / 100);
   $('#co-save').textContent = '− ' + money.format(saving / 100);
-  $('#co-ship').textContent = SHIPPING === null ? 'A confirmar' : (SHIPPING === 0 ? 'Grátis' : money.format(SHIPPING / 100));
+  $('#co-ship').textContent = ship === 0 ? 'Grátis' : money.format(ship / 100);
   $('#co-total').textContent = money.format((subtotal + ship) / 100);
   $('#co-minus').disabled = n === 1;
   $('#co-plus').disabled = n === 99;
@@ -105,19 +108,105 @@ form.elements.cep.addEventListener('input', async event => {
   }
 });
 
-// ===== Envio =====
-form.addEventListener('submit', event => {
+// ===== Botão e mensagens =====
+const submitButton = $('#co-submit');
+const msg = $('#co-msg');
+const state = {loading: false, pix: null, timer: null};
+function totalCents() { return qty() * UNIT_PRICE + shippingCents(); }
+function updateButton() {
+  submitButton.textContent = state.loading ? 'Gerando Pix…' : 'Pagar com Pix · ' + money.format(totalCents() / 100);
+  submitButton.disabled = state.loading;
+}
+function show(text, isError) { msg.className = 'co-msg' + (isError ? ' err' : ''); msg.textContent = text; msg.hidden = !text; }
+qtyInput.addEventListener('input', updateButton);
+form.addEventListener('change', event => { if (event.target.name === 'frete') { render(); updateButton(); } });
+qtyInput.addEventListener('change', updateButton);
+$('#co-minus').addEventListener('click', updateButton);
+$('#co-plus').addEventListener('click', updateButton);
+updateButton();
+
+// ===== Telas depois de confirmar =====
+function showScreen(name) {
+  $('#co-main').hidden = name !== 'form';
+  $('#co-screen').hidden = name === 'form';
+  document.querySelectorAll('[data-screen]').forEach(el => { el.hidden = el.dataset.screen !== name; });
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+function drawQR(canvas, text) {
+  try {
+    const qr = qrcode(0, 'M');
+    qr.addData(text); qr.make();
+    const n = qr.getModuleCount(), margin = 2, cell = Math.max(2, Math.floor(280 / (n + margin * 2)));
+    const px = cell * (n + margin * 2);
+    canvas.width = canvas.height = px;
+    const c = canvas.getContext('2d');
+    c.fillStyle = '#fff'; c.fillRect(0, 0, px, px);
+    c.fillStyle = '#000';
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (qr.isDark(y, x)) c.fillRect((x + margin) * cell, (y + margin) * cell, cell, cell);
+  } catch { canvas.hidden = true; }
+}
+function showPix(pix) {
+  $('#pix-amount').textContent = money.format(pix.amount / 100);
+  $('#pix-code').value = pix.qrcode;
+  $('#pix-qr').hidden = false; drawQR($('#pix-qr'), pix.qrcode);
+  $('#pix-exp').textContent = pix.expirationDate ? 'Válido até ' + new Date(pix.expirationDate).toLocaleString('pt-BR') : '';
+  showScreen('pix');
+}
+$('#pix-code').addEventListener('focus', event => event.currentTarget.select());
+$('#pix-copy').addEventListener('click', async () => {
+  const button = $('#pix-copy');
+  try { await navigator.clipboard.writeText(state.pix.qrcode); }
+  catch { $('#pix-code').select(); document.execCommand('copy'); }
+  button.textContent = '✓ Código copiado!';
+  setTimeout(() => { button.textContent = 'Copiar código Pix'; }, 2500);
+});
+function showPaid() {
+  clearInterval(state.timer);
+  $('#paid-amount').textContent = money.format((state.pix?.amount ?? totalCents()) / 100);
+  $('#paid-email').textContent = form.elements.email.value;
+  showScreen('paid');
+}
+function showFailed() { clearInterval(state.timer); showScreen('failed'); }
+$('#fail-retry').addEventListener('click', () => { state.pix = null; showScreen('form'); });
+
+// ===== Confirmação do pagamento (consulta a cada 5 segundos) =====
+function startPolling(id) {
+  clearInterval(state.timer);
+  state.timer = setInterval(async () => {
+    let status = '';
+    try {
+      const response = await fetch('/api/pix-status?id=' + encodeURIComponent(id));
+      status = String((await response.json()).status || '');
+    } catch { return; }
+    if (status === 'paid' || status === 'authorized') showPaid();
+    else if (['refused', 'canceled', 'cancelled', 'expired'].includes(status)) showFailed();
+  }, 5000);
+}
+
+// ===== Envio do pedido (Pix via Unipay) =====
+form.addEventListener('submit', async event => {
   event.preventDefault();
   const results = Object.keys(rules).map(check);
-  if (results.includes(false)) {
-    form.querySelector('.field.bad input').focus();
-    return;
+  if (results.includes(false)) { form.querySelector('.field.bad input').focus(); return; }
+  const f = new FormData(form);
+  // O servidor recalcula o valor: aqui só vão a oferta, a quantidade e os dados do cliente.
+  const order = {
+    offerId: 'jatomax', quantity: qty(), shippingId: shippingId(),
+    customer: {name: f.get('nome').trim(), email: f.get('email').trim(), cpf: digits(f.get('cpf')), phone: digits(f.get('telefone'))},
+    address: {cep: digits(f.get('cep')), street: f.get('rua').trim(), number: f.get('numero').trim(), complement: f.get('complemento').trim(), neighborhood: f.get('bairro').trim(), city: f.get('cidade').trim(), state: f.get('uf')},
+    sourceUrl: location.href
+  };
+  state.loading = true; show('', false); updateButton();
+  try {
+    const response = await fetch('/api/create-pix', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(order)});
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) { show(data.error || 'Não foi possível gerar o Pix.', true); return; }
+    state.pix = data;
+    showPix(data);
+    startPolling(data.id);
+  } catch {
+    show('Falha de conexão. Tente novamente em instantes.', true);
+  } finally {
+    state.loading = false; updateButton();
   }
-  const order = Object.fromEntries(new FormData(form).entries());
-  order.quantidade = qty();
-  order.total = qty() * UNIT_PRICE;
-  try { sessionStorage.setItem('jatomax-pedido', JSON.stringify(order)); } catch {}
-  // >>> Quando os métodos de pagamento forem adicionados, a cobrança entra aqui. <<<
-  $('#done-detail').textContent = order.quantidade + (order.quantidade === 1 ? ' unidade' : ' unidades') + ' · ' + $('#co-total').textContent + ' · entrega em ' + order.cidade + '/' + order.uf + '.';
-  $('#co-done').showModal();
 });
