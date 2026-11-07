@@ -111,7 +111,18 @@ form.elements.cep.addEventListener('input', async event => {
 // ===== Botão e mensagens =====
 const submitButton = $('#co-submit');
 const msg = $('#co-msg');
-const state = {loading: false, pix: null, timer: null};
+const state = {loading: false, pix: null, timer: null, purchaseSent: ''};
+
+// ===== Meta Pixel (tracking.js) =====
+const pixelData = cents => ({content_name: 'JatoMax Soprador Turbo 2.0', content_type: 'product', content_ids: ['jatomax'], contents: [{id: 'jatomax', quantity: qty()}], num_items: qty(), value: cents / 100, currency: 'BRL'});
+window.fbq?.('track', 'InitiateCheckout', pixelData(qty() * UNIT_PRICE + shippingCents()));
+function trackPurchase(cents) {
+  // Um disparo por Pix (cada Pix novo tem id novo e conta como uma nova venda)
+  const key = state.pix?.id || 'jatomax';
+  if (state.purchaseSent === key) return;
+  state.purchaseSent = key;
+  window.fbq?.('track', 'Purchase', pixelData(cents), {eventID: 'purchase_' + key});
+}
 function totalCents() { return qty() * UNIT_PRICE + shippingCents(); }
 function updateButton() {
   submitButton.textContent = state.loading ? 'Gerando Pix…' : 'Pagar com Pix · ' + money.format(totalCents() / 100);
@@ -162,6 +173,7 @@ $('#pix-copy').addEventListener('click', async () => {
 });
 function showPaid() {
   clearInterval(state.timer);
+  trackPurchase(state.pix?.amount ?? totalCents());
   $('#paid-amount').textContent = money.format((state.pix?.amount ?? totalCents()) / 100);
   $('#paid-email').textContent = form.elements.email.value;
   showScreen('paid');
