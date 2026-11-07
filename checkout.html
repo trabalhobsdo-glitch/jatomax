@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171b15"><meta name="robots" content="noindex"><title>Finalizar compra | JatoMax</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="checkout.css"><script src="checkout.js" defer></script></head>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171b15"><meta name="robots" content="noindex"><title>Finalizar compra | JatoMax</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="checkout.css"><script src="vendor/qrcode.js" defer></script><script src="checkout.js" defer></script></head>
 <body>
 <div class="preview">Compra segura · JatoMax</div>
 <header><div class="wrap head"><a class="wordmark" href="index.html" aria-label="JatoMax, voltar à loja"><span class="wordmark-icon" aria-hidden="true">↗</span>JATO<span class="wordmark-max">MAX</span></a><nav aria-label="Navegação"><a href="index.html">‹ Voltar à loja</a></nav></div></header>
 
-<main class="wrap checkout">
+<main class="wrap checkout" id="co-main">
   <h1 class="co-title">Finalizar compra</h1>
   <div class="co-layout">
 
@@ -31,19 +31,22 @@
           <label class="field"><span>Bairro</span><input name="bairro" required><em class="err" aria-live="polite"></em></label>
           <label class="field"><span>Cidade</span><input name="cidade" autocomplete="address-level2" required><em class="err" aria-live="polite"></em></label>
         </div>
+        <h3 class="sub">Forma de envio</h3>
+        <div id="shipping-options" class="ship-list" role="radiogroup" aria-label="Forma de envio">
+          <label class="pay-option ship-option"><input type="radio" name="frete" value="gratis" checked><span><strong>Frete grátis</strong><small>Sem custo adicional.</small></span><b>Grátis</b></label>
+          <label class="pay-option ship-option"><input type="radio" name="frete" value="pago"><span><strong>Frete pago</strong><small>Opção com custo adicional.</small></span><b>R$ 15,99</b></label>
+        </div>
       </section>
 
       <section class="box co-step" aria-labelledby="s3">
         <h2 id="s3"><span class="num">3</span>Pagamento</h2>
-        <!-- ===== MÉTODOS DE PAGAMENTO =====
-             Coloque aqui dentro os métodos (Pix, cartão, boleto…).
-             Tudo que estiver dentro de #payment-methods substitui o aviso abaixo. -->
         <div id="payment-methods">
-          <div class="pay-soon"><strong>Formas de pagamento em configuração</strong><span>Em breve você poderá escolher como pagar aqui.</span></div>
+          <label class="pay-option"><input type="radio" name="metodo" value="pix" checked><span><strong>Pix</strong><small>Aprovação na hora. O QR Code aparece depois de confirmar.</small></span><i aria-hidden="true">✓</i></label>
         </div>
       </section>
 
-      <button type="submit" class="primary co-submit">Finalizar pedido ↗</button>
+      <button type="submit" id="co-submit" class="primary co-submit">Pagar com Pix</button>
+      <p id="co-msg" class="co-msg" role="alert" hidden></p>
       <p class="co-safe">🔒 Seus dados são usados apenas para processar este pedido.</p>
     </form>
 
@@ -59,14 +62,37 @@
       <dl class="lines">
         <div><dt>Subtotal</dt><dd id="co-subtotal">R$ 89,90</dd></div>
         <div><dt>De <del>R$ 249,90</del> · desconto aplicado</dt><dd class="save" id="co-save">− R$ 160,00</dd></div>
-        <div><dt>Frete</dt><dd id="co-ship">A confirmar</dd></div>
+        <div><dt>Frete</dt><dd id="co-ship">Grátis</dd></div>
         <div class="grand"><dt>Total</dt><dd id="co-total">R$ 89,90</dd></div>
       </dl>
     </aside>
   </div>
 </main>
 
+<main class="wrap co-screen" id="co-screen" hidden>
+  <section class="box co-panel" data-screen="pix" hidden>
+    <h1>Pague com Pix</h1>
+    <p>Abra o app do seu banco, escolha <strong>Pix</strong> e escaneie o QR Code ou use o código copia e cola.</p>
+    <p class="co-pix-amount" id="pix-amount"></p>
+    <canvas id="pix-qr" class="co-qr" width="280" height="280" aria-label="QR Code do Pix"></canvas>
+    <textarea id="pix-code" class="co-pix-code" readonly rows="3" aria-label="Código Pix copia e cola"></textarea>
+    <button id="pix-copy" class="primary" type="button">Copiar código Pix</button>
+    <p class="co-wait"><span class="co-dot"></span> Aguardando pagamento… esta tela atualiza sozinha.</p>
+    <p class="co-small" id="pix-exp"></p>
+  </section>
+  <section class="box co-panel" data-screen="paid" hidden>
+    <div class="co-ok" aria-hidden="true">✓</div>
+    <h1>Pagamento confirmado!</h1>
+    <p>Recebemos o seu Pix de <strong id="paid-amount"></strong>. Em breve você receberá as informações do pedido no e-mail <strong id="paid-email"></strong>.</p>
+    <a class="primary" href="index.html">Voltar para a loja</a>
+  </section>
+  <section class="box co-panel" data-screen="failed" hidden>
+    <h1>Pix expirado ou cancelado</h1>
+    <p>Não identificamos o pagamento. Você pode gerar um novo Pix.</p>
+    <button id="fail-retry" class="primary" type="button">Gerar novo Pix</button>
+  </section>
+</main>
+
 <footer class="wrap"><span>JatoMax · Soprador Turbo 2.0</span></footer>
 
-<dialog id="co-done" class="site-dialog" aria-labelledby="done-title"><form method="dialog"><button class="dialog-close" aria-label="Fechar">×</button><h2 id="done-title">Dados confirmados ✓</h2><p id="done-detail"></p><p>O pagamento ainda está sendo configurado, então nenhuma cobrança foi feita.</p><button class="primary" style="width:100%;margin-top:12px">Ok</button></form></dialog>
 </body></html>
