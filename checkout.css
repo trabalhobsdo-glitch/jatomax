@@ -45,3 +45,34 @@
   .co-step{padding:14px}
 }
 @media(max-width:420px){.grid{grid-template-columns:1fr}}
+
+.pay-option{position:relative;display:flex;align-items:center;gap:12px;border:2px solid var(--violet);background:#f9fbf4;border-radius:10px;padding:14px;cursor:pointer}
+.pay-option input{position:absolute;opacity:0}
+.pay-option span{flex:1}
+.pay-option strong{display:block;font-size:1rem}
+.pay-option small{display:block;color:var(--muted);font-size:.8rem}
+.pay-option i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--lime);color:var(--graphite);font-style:normal;font-weight:800;font-size:.8rem}
+.co-msg{border-radius:8px;padding:10px 12px;font-size:.88rem;background:#eef3e6}
+.co-msg.err{background:#fdecea;color:#8a1c14}
+.co-submit:disabled{opacity:.7;cursor:wait}
+.co-screen{padding-block:20px}
+.co-panel{max-width:460px;margin-inline:auto;padding:22px;text-align:center;display:grid;gap:12px;justify-items:center;border-top:4px solid var(--lime)}
+.co-panel[hidden]{display:none}
+.co-panel h1{font-size:1.5rem;font-weight:850;letter-spacing:-.04em}
+.co-panel .primary{width:100%;flex:none;display:block}
+.co-pix-amount{font-size:1.7rem;font-weight:850}
+.co-qr{width:min(280px,100%);height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+.co-pix-code{width:100%;resize:none;border:1px solid #c9d1bf;border-radius:8px;padding:10px;font:.75rem/1.35 ui-monospace,monospace;word-break:break-all;background:#fafafa}
+.co-wait{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--muted)}
+.co-dot{width:10px;height:10px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 0 #c8fb3688;animation:co-pulse 1.4s infinite}
+@keyframes co-pulse{70%{box-shadow:0 0 0 10px #c8fb3600}100%{box-shadow:0 0 0 0 #c8fb3600}}
+.co-small{font-size:.76rem;color:var(--muted)}
+.co-ok{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:var(--lime);color:var(--graphite);font-size:2rem;font-weight:800}
+@media(prefers-reduced-motion:reduce){.co-dot{animation:none}}
+
+.sub{font-size:.95rem;font-weight:800;margin:18px 0 10px}
+.ship-list{display:grid;gap:10px}
+.ship-option{border-color:#c9d1bf;background:#fff}
+.ship-option:has(input:checked){border-color:var(--violet);background:#f9fbf4}
+.ship-option b{font-size:.95rem;white-space:nowrap}
+.ship-option:has(input:focus-visible){outline:2px solid var(--violet);outline-offset:2px}
