@@ -1,0 +1,12 @@
+api/
+media/
+vendor/
+.gitignore
+app.js
+checkout.css
+checkout.html
+checkout.js
+index.html
+package.json
+style.css
+tracking.js
