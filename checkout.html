@@ -31,10 +31,10 @@
           <label class="field"><span>Bairro</span><input name="bairro" required><em class="err" aria-live="polite"></em></label>
           <label class="field"><span>Cidade</span><input name="cidade" autocomplete="address-level2" required><em class="err" aria-live="polite"></em></label>
         </div>
-        <h3 class="sub">Forma de envio</h3>
-        <div id="shipping-options" class="ship-list" role="radiogroup" aria-label="Forma de envio">
-          <label class="pay-option ship-option"><input type="radio" name="frete" value="gratis" checked><span><strong>Frete grátis</strong><small>Sem custo adicional.</small></span><b>Grátis</b></label>
-          <label class="pay-option ship-option"><input type="radio" name="frete" value="pago"><span><strong>Frete pago</strong><small>Opção com custo adicional.</small></span><b>R$ 15,99</b></label>
+        <h3 class="sub">Escolha o frete:</h3>
+        <div id="shipping-options" class="ship-list" role="radiogroup" aria-label="Escolha o frete">
+          <label class="ship-card"><input type="radio" name="frete" value="gratis" checked><span class="ship-radio" aria-hidden="true"></span><span class="ship-text"><strong>Frete Grátis</strong><small>3 a 7 dias úteis <svg class="ship-ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 6.5v11L12 22l9-4.5v-11L12 2Z" fill="#d6224a"/><path d="M12 2 3 6.5 12 11l9-4.5L12 2Z" fill="#ef5b7b"/><path d="M12 11v11" stroke="#fff" stroke-width="1.4"/></svg></small></span><b>Grátis</b></label>
+          <label class="ship-card"><input type="radio" name="frete" value="pago"><span class="ship-radio" aria-hidden="true"></span><span class="ship-text"><strong>Frete Expresso</strong><small>1 a 3 dias úteis <svg class="ship-ico" width="20" height="22" viewBox="0 0 20 24" aria-hidden="true"><path d="M11.5 0 1 13.5h7L6.5 24 19 9.5h-7.5L11.5 0Z" fill="#1fa347"/></svg></small></span><b>R$ 15,99</b></label>
         </div>
       </section>
 
