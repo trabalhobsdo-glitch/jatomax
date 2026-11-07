@@ -13,8 +13,8 @@ export const OFFERS: Record<string, { title: string; unitCents: number }> = {
 
 // Opções de frete (valores em centavos). Se mudar aqui, mude também SHIPPING_OPTIONS em checkout.js.
 export const SHIPPING: Record<string, { name: string; cents: number }> = {
-  gratis: { name: "Frete grátis", cents: 0 },
-  pago: { name: "Frete pago", cents: 1599 },
+  gratis: { name: "Frete Grátis", cents: 0 },
+  pago: { name: "Frete Expresso", cents: 1599 },
 };
 
 export function readOrder(body: any) {
